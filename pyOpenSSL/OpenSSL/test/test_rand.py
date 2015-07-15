@@ -8,8 +8,9 @@ Unit tests for :py:obj:`OpenSSL.rand`.
 from unittest import main
 import os
 import stat
+import sys
 
-from OpenSSL.test.util import TestCase, b
+from OpenSSL.test.util import NON_ASCII, TestCase, b
 from OpenSSL import rand
 
 
@@ -23,7 +24,14 @@ class RandTests(TestCase):
         self.assertRaises(TypeError, rand.bytes, None)
         self.assertRaises(TypeError, rand.bytes, 3, None)
 
-    # XXX Test failure of the malloc() in rand_bytes.
+
+    def test_insufficientMemory(self):
+        """
+        :py:obj:`OpenSSL.rand.bytes` raises :py:obj:`MemoryError` if more bytes
+        are requested than will fit in memory.
+        """
+        self.assertRaises(MemoryError, rand.bytes, sys.maxsize)
+
 
     def test_bytes(self):
         """
@@ -119,6 +127,19 @@ class RandTests(TestCase):
             "%r not in %r" % (result, expected))
 
 
+    def test_egd_missing_and_bytes(self):
+        """
+        :py:obj:`OpenSSL.rand.egd` returns :py:obj:`0` or :py:obj:`-1` if the
+        EGD socket passed to it does not exist even if a size argument is
+        explicitly passed.
+        """
+        result = rand.egd(self.mktemp(), 1024)
+        expected = (-1, 0)
+        self.assertTrue(
+            result in expected,
+            "%r not in %r" % (result, expected))
+
+
     def test_cleanup_wrong_args(self):
         """
         :py:obj:`OpenSSL.rand.cleanup` raises :py:obj:`TypeError` when called with any
@@ -155,27 +176,47 @@ class RandTests(TestCase):
         self.assertRaises(TypeError, rand.write_file, None)
         self.assertRaises(TypeError, rand.write_file, "foo", None)
 
+    def _read_write_test(self, path):
+        """
+        Verify that ``rand.write_file`` and ``rand.load_file`` can be used.
+        """
+        # Create the file so cleanup is more straightforward
+        with open(path, "w"):
+            pass
 
-    def test_files(self):
-        """
-        Test reading and writing of files via rand functions.
-        """
-        # Write random bytes to a file
-        tmpfile = self.mktemp()
-        # Make sure it exists (so cleanup definitely succeeds)
-        fObj = open(tmpfile, 'w')
-        fObj.close()
         try:
-            rand.write_file(tmpfile)
+            # Write random bytes to a file
+            rand.write_file(path)
+
             # Verify length of written file
-            size = os.stat(tmpfile)[stat.ST_SIZE]
-            self.assertEquals(size, 1024)
+            size = os.stat(path)[stat.ST_SIZE]
+            self.assertEqual(1024, size)
+
             # Read random bytes from file
-            rand.load_file(tmpfile)
-            rand.load_file(tmpfile, 4)  # specify a length
+            rand.load_file(path)
+            rand.load_file(path, 4)  # specify a length
         finally:
             # Cleanup
-            os.unlink(tmpfile)
+            os.unlink(path)
+
+
+    def test_bytes_paths(self):
+        """
+        Random data can be saved and loaded to files with paths specified as
+        bytes.
+        """
+        path = self.mktemp()
+        path += NON_ASCII.encode(sys.getfilesystemencoding())
+        self._read_write_test(path)
+
+
+    def test_unicode_paths(self):
+        """
+        Random data can be saved and loaded to files with paths specified as
+        unicode.
+        """
+        path = self.mktemp().decode('utf-8') + NON_ASCII
+        self._read_write_test(path)
 
 
 if __name__ == '__main__':
