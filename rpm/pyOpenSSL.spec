@@ -1,20 +1,15 @@
-%{!?python:%define python python}
-%{!?python_sitearch: %define python_sitearch %(%{python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
-
 Name:       pyOpenSSL
 Version:    0.15.1
 Release:    0
 Summary:    Python wrapper module around the OpenSSL library
-
-Group:      Development/Libraries
 License:    ASL 2.0
 URL:        https://github.com/pyca/pyopenssl.git
 Source0:    %{name}-%{version}.tar.gz
 
 BuildRequires:	openssl-devel
-BuildRequires:	%{python}-devel
-BuildRequires:	%{python}-setuptools
-Requires:	%{python}
+BuildRequires:	python-devel
+BuildRequires:	python-setuptools
+Requires:	python
 
 %description
 High-level wrapper around a subset of the OpenSSL library, includes among others
@@ -24,13 +19,13 @@ High-level wrapper around a subset of the OpenSSL library, includes among others
  * Extensive error-handling mechanism, mirroring OpenSSL's error codes
 
 %prep
-%setup -q -n %{name}-%{version}/%{name}
+%autosetup -n %{name}-%{version}/%{name}
 
 %build
-CFLAGS="%{optflags} -fno-strict-aliasing" %{__python} setup.py build
+%py2_build
 
 %install
-%{__python} setup.py install --skip-build --root %{buildroot}
+%py2_install
 
 %files
 %defattr(-,root,root,-)
