@@ -31,6 +31,7 @@ High-level wrapper around a subset of the OpenSSL library, includes among others
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{python3_sitelib}/OpenSSL/
 %{python3_sitelib}/pyOpenSSL*.egg-info
 %doc README.rst
