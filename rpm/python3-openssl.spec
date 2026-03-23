@@ -1,5 +1,5 @@
 Name:       python3-openssl
-Version:    19.1.0
+Version:    26.0.0
 Release:    0
 Summary:    Python wrapper module around the OpenSSL library
 License:    ASL 2.0
@@ -30,7 +30,6 @@ High-level wrapper around a subset of the OpenSSL library, includes among others
 %py3_install
 
 %files
-%defattr(-,root,root,-)
 %license LICENSE
 %{python3_sitelib}/OpenSSL/
 %{python3_sitelib}/pyOpenSSL*.egg-info
