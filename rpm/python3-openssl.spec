@@ -5,6 +5,7 @@ Summary:    Python wrapper module around the OpenSSL library
 License:    ASL 2.0
 URL:        https://github.com/pyca/pyopenssl.git
 Source0:    %{name}-%{version}.tar.gz
+Patch0:     0001-Handle-exceptions-in-set_tlsext_servername_callback-.patch
 
 # Support migration from old package name
 Provides:       pyOpenSSL = %{version}-%{release}
@@ -21,7 +22,7 @@ High-level wrapper around a subset of the OpenSSL library, includes among others
  * Extensive error-handling mechanism, mirroring OpenSSL's error codes
 
 %prep
-%autosetup -n %{name}-%{version}/upstream
+%autosetup -p1 -n %{name}-%{version}/upstream
 
 %build
 %py3_build
@@ -30,7 +31,6 @@ High-level wrapper around a subset of the OpenSSL library, includes among others
 %py3_install
 
 %files
-%defattr(-,root,root,-)
 %license LICENSE
 %{python3_sitelib}/OpenSSL/
 %{python3_sitelib}/pyOpenSSL*.egg-info
